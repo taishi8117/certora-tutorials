@@ -60,6 +60,7 @@ rule balanceChangesFromCertainFunctions(method f, address user){
 // Checks that the totalSupply of the token is at least equal to a single user's balance
 // This rule breaks also on a fixed version of ERC20 -
 // why? understand the infeasible state that the rule start with 
+// @note https://forum.certora.com/t/erc20-sum-of-balances-tutorials-02-lesson-investigateviolations-erc20/180
 rule totalSupplyNotLessThanSingleUserBalance(method f, address user) {
 	env e;
 	calldataarg args;
@@ -72,5 +73,23 @@ rule totalSupplyNotLessThanSingleUserBalance(method f, address user) {
     uint256 userBalanceAfter = balanceOf(e, user);
 	assert totalSupplyBefore >= userBalanceBefore => 
             totalSupplyAfter >= userBalanceAfter,
+        "a user's balance is exceeding the total supply of token";
+}
+
+
+rule totalSupplyNotLessThanSingleUserBalanceForTransfer(address recipient, uint256 amount) {
+    env e;
+	uint256 totalSupplyBefore = totalSupply(e);
+    uint256 userBalanceBefore = balanceOf(e, e.msg.sender);
+    uint256 recipientBalanceBefore = balanceOf(e, recipient);
+
+    transfer(e, recipient, amount);
+
+    uint256 totalSupplyAfter = totalSupply(e);
+    uint256 userBalanceAfter = balanceOf(e, e.msg.sender);
+    uint256 recipientBalanceAfter = balanceOf(e, recipient);
+
+	assert totalSupplyBefore >= userBalanceBefore + recipientBalanceBefore => 
+            totalSupplyAfter >= userBalanceAfter + recipientBalanceAfter,
         "a user's balance is exceeding the total supply of token";
 }

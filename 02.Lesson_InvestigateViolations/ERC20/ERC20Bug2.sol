@@ -274,9 +274,8 @@ contract ERC20 is IERC20, IERC20Metadata {
         _beforeTokenTransfer(sender, recipient, amount);
 
         uint256 senderBalance = _balances[sender];
-        unchecked {
-            _balances[sender] = senderBalance - amount;
-        }
+        //@note this should not have unchecked
+        _balances[sender] = senderBalance - amount;
         _balances[recipient] += amount;
 
         emit Transfer(sender, recipient, amount);
